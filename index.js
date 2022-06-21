@@ -1,30 +1,25 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 
 const app = express()
+
+mongoose
+  .connect(
+    `mongodb+srv://admin:admin123@cluster0.urtgmom.mongodb.net/?retryWrites=true&w=majority`,
+  )
+  .then(() => {
+    console.log(`DB OK`)
+  })
+  .catch((err) => {
+    console.log(`DB error`, err)
+  })
 
 const PORT = 4444
 
 app.use(express.json())
 
-app.get('/', (req, res) => {
-  res.send('Hello  world!')
-})
-
-app.post('/auth/login', (req, res) => {
-  console.log(req.body)
-  const token = jwt.sign(
-    {
-      email: req.body.email,
-      fullName: 'Вася',
-    },
-    'secret123',
-  )
-  res.json({
-    success: true,
-    token,
-  })
-})
+app.post('/auth/register', (req, res) => {})
 
 app.listen(PORT, (err) => {
   if (err) {
