@@ -1,5 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import multer from 'multer'
 
 import { loginValidation, postCreateValidation, registerValidation } from './validations.js'
 import checkAuth from './utils/checkAuth.js'
@@ -21,15 +22,35 @@ mongoose
 
 const PORT = 4444
 
+const storage = multer.diskStorage({
+  destination: (_, __, cb) => {
+    cb(null, 'uploads')
+  },
+  filename: (_, file, cb) => {
+    cb(null, file.originalname)
+  },
+})
+
+const upload = multer({ storage })
+
 app.use(express.json())
+app.use('/uploads', express.static('uploads'))
 
 app.post('/auth/register', registerValidation, register)
 app.post('/auth/login', loginValidation, login)
 app.get('/auth/me', checkAuth, getMe)
 
+app.get('/posts', PostController.getAll)
+app.get('/posts/:id', PostController.getOne)
 app.post('/posts', checkAuth, postCreateValidation, PostController.create)
-app.get('/posts', checkAuth, postCreateValidation, PostController.getAll)
-app.get('/posts/:id', checkAuth, postCreateValidation, PostController.getOne)
+app.patch('/posts/:id', checkAuth, postCreateValidation, PostController.update)
+app.delete('/posts/:id', checkAuth, PostController.remove)
+
+app.post('/uploads', checkAuth, upload.single('image'), (req, res) => {
+  res.json({
+    url: `/uploads/${req.file.originalname}`,
+  })
+})
 
 app.listen(PORT, (err) => {
   if (err) {
